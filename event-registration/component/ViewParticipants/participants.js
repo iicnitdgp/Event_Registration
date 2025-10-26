@@ -8,6 +8,7 @@ export default function ViewParticipants() {
   const [participants, setParticipants] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [participantsLoading, setParticipantsLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -54,6 +55,34 @@ export default function ViewParticipants() {
     setSelectedEvent(e.target.value);
   };
 
+  const handleDelete = async (participantId, participantName) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${participantName}'s registration?`
+    );
+
+    if (!confirmDelete) return;
+
+    setDeleteLoading(participantId);
+    try {
+      const response = await fetch(`/api/participants/${participantId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh participants list
+        fetchParticipants(selectedEvent);
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (error) {
+      alert('Error deleting participant: ' + error.message);
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
+
   if (eventsLoading) return <div className={styles.loading}>Loading events...</div>;
 
   return (
@@ -98,15 +127,25 @@ export default function ViewParticipants() {
                       <th>Email</th>
                       <th>Phone</th>
                       <th>Roll No</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {participants.map((participant) => (
-                      <tr key={participant._id}>
+                      <tr key={participant.id}>
                         <td>{participant.Name}</td>
                         <td>{participant.Email}</td>
                         <td>{participant.Phone || 'N/A'}</td>
                         <td>{participant.RollNo}</td>
+                        <td>
+                          <button
+                            onClick={() => handleDelete(participant.id, participant.Name)}
+                            disabled={deleteLoading === participant.id}
+                            className={styles.deleteButton}
+                          >
+                            {deleteLoading === participant.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

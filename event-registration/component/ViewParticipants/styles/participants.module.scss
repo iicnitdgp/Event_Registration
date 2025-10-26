@@ -44,6 +44,8 @@
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   font-size: 0.875rem;
+  color: #000000;
+  background-color: #ffffff;
   cursor: pointer;
 
   &:focus {
@@ -114,4 +116,30 @@
   background-color: #f9fafb;
   border-radius: 0.375rem;
   margin-top: 1rem;
+}
+
+.deleteButton {
+  padding: 0.375rem 0.75rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3);
+  }
 }

@@ -40,6 +40,20 @@ const getAllEvents = async () => {
 const registerForEvent = async (registrationData) => {
     try {
         await connectDB();
+        
+        // Check if student is already registered for this event using RollNo or Email
+        const existingRegistration = await EventRegister.findOne({
+            EventID: registrationData.EventID,
+            $or: [
+                { RollNo: registrationData.RollNo },
+                { Email: registrationData.Email }
+            ]
+        });
+
+        if (existingRegistration) {
+            throw new Error('Student is already registered for this event');
+        }
+
         const newRegistration = new EventRegister(registrationData);
         const savedRegistration = await newRegistration.save();
         return {
@@ -72,9 +86,23 @@ const getRegisteredParticipants = async (eventId) => {
     }
 };
 
+const deleteParticipant = async (participantId) => {
+    try {
+        await connectDB();
+        const result = await EventRegister.findByIdAndDelete(participantId);
+        if (!result) {
+            throw new Error('Participant not found');
+        }
+        return { success: true };
+    } catch (err) {
+        throw new Error('Error deleting participant: ' + err.message);
+    }
+};
+
 export const EVENT_DBOperation = {
     createEvent,
     getAllEvents,
     registerForEvent,
-    getRegisteredParticipants
+    getRegisteredParticipants,
+    deleteParticipant
 };
