@@ -30,5 +30,5 @@ const eventRegisterSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const EventRegister = mongoose.models.EventRegister || mongoose.model('EventRegister', eventRegisterSchema);
+const EventRegister = mongoose.models.IIC_EventRegister || mongoose.model('IIC_EventRegister', eventRegisterSchema);
 export default EventRegister;
