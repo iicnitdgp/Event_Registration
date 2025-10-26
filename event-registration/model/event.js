@@ -14,5 +14,5 @@ const eventSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const Event = mongoose.models.IIC_Event || mongoose.model('IIC_Event', eventSchema);
+const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 export default Event;
