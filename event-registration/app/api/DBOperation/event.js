@@ -57,6 +57,7 @@ const registerForEvent = async (registrationData) => {
         const newRegistration = new EventRegister(registrationData);
         const savedRegistration = await newRegistration.save();
         return {
+            _id: savedRegistration._id,
             id: savedRegistration._id.toString(),
             EventID: savedRegistration.EventID.toString(),
             Name: savedRegistration.Name,
@@ -79,7 +80,9 @@ const getRegisteredParticipants = async (eventId) => {
             Name: p.Name,
             Email: p.Email,
             Phone: p.Phone,
-            RollNo: p.RollNo
+            RollNo: p.RollNo,
+            QRCodeUrl: p.QRCodeUrl,
+            FoodCuponIssue: p.FoodCuponIssue || false
         }));
     } catch (err) {
         throw new Error('Error fetching registered participants: ' + err.message);
@@ -99,10 +102,91 @@ const deleteParticipant = async (participantId) => {
     }
 };
 
+const updateRegistrationQRCode = async (registrationId, qrCodeUrl) => {
+    try {
+        await connectDB();
+        const result = await EventRegister.findByIdAndUpdate(
+            registrationId,
+            { QRCodeUrl: qrCodeUrl },
+            { new: true }
+        );
+        if (!result) {
+            throw new Error('Registration not found');
+        }
+        return { success: true };
+    } catch (err) {
+        throw new Error('Error updating QR code: ' + err.message);
+    }
+};
+
+const getEventById = async (eventId) => {
+    try {
+        await connectDB();
+        const event = await Event.findById(eventId);
+        if (!event) {
+            throw new Error('Event not found');
+        }
+        return {
+            id: event._id.toString(),
+            EventName: event.EventName,
+            EventDetails: event.EventDetails,
+            EventDate: event.EventDate
+        };
+    } catch (err) {
+        throw new Error('Error fetching event: ' + err.message);
+    }
+};
+
+const getRegistrationById = async (registrationId) => {
+    try {
+        await connectDB();
+        const registration = await EventRegister.findById(registrationId).populate('EventID');
+        if (!registration) {
+            throw new Error('Registration not found');
+        }
+        return {
+            id: registration._id.toString(),
+            EventID: registration.EventID._id.toString(),
+            EventName: registration.EventID.EventName,
+            EventDetails: registration.EventID.EventDetails,
+            EventDate: registration.EventID.EventDate,
+            Name: registration.Name,
+            Email: registration.Email,
+            Phone: registration.Phone,
+            RollNo: registration.RollNo,
+            QRCodeUrl: registration.QRCodeUrl,
+            FoodCuponIssue: registration.FoodCuponIssue || false
+        };
+    } catch (err) {
+        throw new Error('Error fetching registration: ' + err.message);
+    }
+};
+
+const updateFoodCouponStatus = async (registrationId, foodCouponIssued) => {
+    try {
+        await connectDB();
+        const result = await EventRegister.findByIdAndUpdate(
+            registrationId,
+            { FoodCuponIssue: foodCouponIssued },
+            { new: true }
+        );
+        if (!result) {
+            throw new Error('Registration not found');
+        }
+        return { success: true };
+    } catch (err) {
+        throw new Error('Error updating food coupon status: ' + err.message);
+    }
+};
+
 export const EVENT_DBOperation = {
     createEvent,
     getAllEvents,
     registerForEvent,
     getRegisteredParticipants,
-    deleteParticipant
+    deleteParticipant,
+    updateRegistrationQRCode,
+    getEventById,
+    getRegistrationById,
+    updateFoodCouponStatus
 };

@@ -127,6 +127,8 @@ export default function ViewParticipants() {
                       <th>Email</th>
                       <th>Phone</th>
                       <th>Roll No</th>
+                      <th>QR Code</th>
+                      <th>Food Coupon</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -137,6 +139,27 @@ export default function ViewParticipants() {
                         <td>{participant.Email}</td>
                         <td>{participant.Phone || 'N/A'}</td>
                         <td>{participant.RollNo}</td>
+                        <td>
+                          {participant.QRCodeUrl ? (
+                            <a 
+                              href={participant.QRCodeUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className={styles.qrLink}
+                            >
+                              View QR
+                            </a>
+                          ) : (
+                            'N/A'
+                          )}
+                        </td>
+                        <td>
+                          {participant.FoodCuponIssue ? (
+                            <span className={styles.couponIssued}>✓ Issued</span>
+                          ) : (
+                            <span className={styles.couponNotIssued}>Not Issued</span>
+                          )}
+                        </td>
                         <td>
                           <button
                             onClick={() => handleDelete(participant.id, participant.Name)}

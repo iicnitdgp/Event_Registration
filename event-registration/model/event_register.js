@@ -20,6 +20,13 @@ const eventRegisterSchema = new mongoose.Schema({
     RollNo: {
         type: String,
         required: true
+    },
+    QRCodeUrl: {
+        type: String
+    },
+    FoodCuponIssue:{
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

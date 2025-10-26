@@ -1,0 +1,265 @@
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.ticket {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.header {
+    background-color: #4CAF50;
+    color: #ffffff;
+    padding: 30px;
+    text-align: center;
+
+    h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+    }
+}
+
+.content {
+    padding: 30px;
+}
+
+.section {
+    margin-bottom: 30px;
+
+    h2 {
+        color: #4CAF50;
+        font-size: 20px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 10px;
+    }
+}
+
+.details {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+
+    p {
+        margin: 10px 0;
+        color: #000000;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+}
+
+.label {
+    font-weight: bold;
+    color: #555555;
+    margin-right: 8px;
+}
+
+.qrSection {
+    text-align: center;
+    padding: 20px;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+
+    h2 {
+        color: #4CAF50;
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+}
+
+.qrCode {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    border: 3px solid #4CAF50;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #ffffff;
+    margin: auto;
+}
+
+.qrNote {
+    margin-top: 15px;
+    color: #666666;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.footer {
+    background-color: #f5f5f5;
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+
+    p {
+        margin: 0;
+        color: #777777;
+        font-size: 14px;
+    }
+}
+
+.loading, .error {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+    color: #4CAF50;
+}
+
+.error {
+    color: #f44336;
+}
+
+.foodCouponStatusSection {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    text-align: center;
+
+    h2 {
+        color: #333;
+        font-size: 20px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+    }
+}
+
+.statusDisplay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.couponNotIssued {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #fff3e0;
+    color: #ff9800;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid #ff9800;
+}
+
+.adminSection {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff3e0;
+    border-radius: 8px;
+    border: 2px solid #ff9800;
+
+    h2 {
+        color: #ff9800;
+        font-size: 20px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ff9800;
+        padding-bottom: 10px;
+    }
+}
+
+.couponSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.couponButton {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+
+    &:hover:not(:disabled) {
+        background-color: #f57c00;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        background-color: #ffb74d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.3);
+    }
+}
+
+.couponIssued {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+
+    .checkmark {
+        font-size: 24px;
+        font-weight: bold;
+    }
+}
+
+@media (max-width: 768px) {
+    .ticket {
+        margin: 10px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .section h2 {
+        font-size: 18px;
+    }
+
+    .details p {
+        font-size: 14px;
+    }
+
+    .qrCode {
+        max-width: 250px;
+    }
+}

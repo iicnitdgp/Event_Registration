@@ -1,0 +1,180 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import styles from './ticket.module.scss';
+
+export default function TicketPage() {
+    const params = useParams();
+    const { eventId, registrationId } = params;
+    const { data: session } = useSession();
+    const [registration, setRegistration] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [updatingCoupon, setUpdatingCoupon] = useState(false);
+
+    useEffect(() => {
+        fetchRegistrationDetails();
+    }, [eventId, registrationId]);
+
+    const fetchRegistrationDetails = async () => {
+        try {
+            const response = await fetch(`/api/ticket/${registrationId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                setRegistration(data.data);
+            } else {
+                setError(data.error || 'Failed to fetch registration details');
+            }
+        } catch (err) {
+            setError('Error fetching registration details');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleFoodCouponIssue = async () => {
+        if (!session) {
+            alert('You must be logged in to issue food coupons');
+            return;
+        }
+
+        const confirmIssue = window.confirm(
+            `Issue food coupon to ${registration.Name}?`
+        );
+
+        if (!confirmIssue) return;
+
+        setUpdatingCoupon(true);
+        try {
+            const response = await fetch(`/api/ticket/${registrationId}/food-coupon`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ foodCouponIssued: true }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setRegistration({ ...registration, FoodCuponIssue: true });
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (err) {
+            alert('Error issuing food coupon: ' + err.message);
+        } finally {
+            setUpdatingCoupon(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.loading}>Loading ticket...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.error}>{error}</div>
+            </div>
+        );
+    }
+
+    if (!registration) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.error}>Registration not found</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.container}>
+            <div className={styles.ticket}>
+                <div className={styles.header}>
+                    <h1>Event Ticket</h1>
+                </div>
+
+                <div className={styles.content}>
+                    <div className={styles.section}>
+                        <h2>Event Details</h2>
+                        <div className={styles.details}>
+                            <p><span className={styles.label}>Event Name:</span> {registration.EventName}</p>
+                            <p><span className={styles.label}>Event Date:</span> {new Date(registration.EventDate).toLocaleDateString()}</p>
+                            {registration.EventDetails && (
+                                <p><span className={styles.label}>Details:</span> {registration.EventDetails}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className={styles.section}>
+                        <h2>Participant Details</h2>
+                        <div className={styles.details}>
+                            <p><span className={styles.label}>Name:</span> {registration.Name}</p>
+                            <p><span className={styles.label}>Roll Number:</span> {registration.RollNo}</p>
+                            <p><span className={styles.label}>Email:</span> {registration.Email}</p>
+                            <p><span className={styles.label}>Phone:</span> {registration.Phone}</p>
+                        </div>
+                    </div>
+
+                    {registration.QRCodeUrl && (
+                        <div className={styles.qrSection}>
+                            <h2>QR Code</h2>
+                            <img 
+                                src={registration.QRCodeUrl} 
+                                alt="Event Ticket QR Code" 
+                                className={styles.qrCode}
+                            />
+                            <p className={styles.qrNote}>
+                                Present this QR code at the event venue
+                            </p>
+                        </div>
+                    )}
+
+                    <div className={styles.foodCouponStatusSection}>
+                        <h2>Food Coupon Status</h2>
+                        <div className={styles.statusDisplay}>
+                            {registration.FoodCuponIssue ? (
+                                <div className={styles.couponIssued}>
+                                    <span className={styles.checkmark}>✓</span>
+                                    <span>Food Coupon Issued</span>
+                                </div>
+                            ) : (
+                                <div className={styles.couponNotIssued}>
+                                    <span>Food Coupon Not Issued Yet</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {session && !registration.FoodCuponIssue && (
+                        <div className={styles.adminSection}>
+                            <h2>Admin Actions</h2>
+                            <div className={styles.couponSection}>
+                                <button
+                                    onClick={handleFoodCouponIssue}
+                                    disabled={updatingCoupon}
+                                    className={styles.couponButton}
+                                >
+                                    {updatingCoupon ? 'Issuing...' : 'Issue Food Coupon'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className={styles.footer}>
+                    <p>Thank you for registering!</p>
+                </div>
+            </div>
+        </div>
+    );
+}
