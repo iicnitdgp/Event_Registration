@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const eventRegisterSchema = new mongoose.Schema({
     EventID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event',
+        ref: 'IIC_Event',
         required: true
     },
     Name: {
