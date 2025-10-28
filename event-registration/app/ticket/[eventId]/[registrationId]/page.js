@@ -153,7 +153,6 @@ export default function TicketPage() {
                 setLoading(true);
                 await fetchRegistrationDetails();
                 setLoading(false);
-                alert(`${action === 'entry' ? 'Entry' : 'Exit'} marked successfully!`);
             } else {
                 alert('Error: ' + data.error);
             }
