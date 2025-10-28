@@ -9,6 +9,10 @@ export default function ViewParticipants() {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [participantsLoading, setParticipantsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editParticipant, setEditParticipant] = useState(null);
+  const [editForm, setEditForm] = useState({ Name: '', Email: '', Phone: '', RollNo: '', FoodCuponNumber: 0, sendEmail: false });
 
   useEffect(() => {
     fetchEvents();
@@ -80,6 +84,57 @@ export default function ViewParticipants() {
       alert('Error deleting participant: ' + error.message);
     } finally {
       setDeleteLoading(null);
+    }
+  };
+
+  const openEdit = (p) => {
+    setEditParticipant(p);
+    setEditForm({
+      Name: p.Name || '',
+      Email: p.Email || '',
+      Phone: p.Phone || '',
+      RollNo: p.RollNo || '',
+      FoodCuponNumber: p.FoodCuponNumber || 0,
+      sendEmail: false,
+    });
+    setEditOpen(true);
+  };
+
+  const closeEdit = () => {
+    setEditOpen(false);
+    setEditParticipant(null);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : (name === 'FoodCuponNumber' ? Number(value) : value),
+    }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editParticipant) return;
+
+    setEditLoading(true);
+    try {
+      const res = await fetch(`/api/participants/${editParticipant.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+      const result = await res.json();
+      if (result.success) {
+        closeEdit();
+        fetchParticipants(selectedEvent);
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (err) {
+      alert('Error updating participant: ' + err.message);
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -170,13 +225,22 @@ export default function ViewParticipants() {
                           )}
                         </td>
                         <td>
-                          <button
-                            onClick={() => handleDelete(participant.id, participant.Name)}
-                            disabled={deleteLoading === participant.id}
-                            className={styles.deleteButton}
-                          >
-                            {deleteLoading === participant.id ? 'Deleting...' : 'Delete'}
-                          </button>
+                          <div className={styles.actionGroup}>
+                            <button
+                              onClick={() => openEdit(participant)}
+                              className={styles.editButton}
+                              disabled={participantsLoading}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(participant.id, participant.Name)}
+                              disabled={deleteLoading === participant.id}
+                              className={styles.deleteButton}
+                            >
+                              {deleteLoading === participant.id ? 'Deleting...' : 'Delete'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -197,6 +261,88 @@ export default function ViewParticipants() {
           </div>
         )}
       </div>
+
+      {editOpen && (
+        <div className={styles.modalOverlay} onClick={closeEdit}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Edit Registration</h3>
+            </div>
+            <form onSubmit={handleEditSubmit} className={styles.modalBody}>
+              <div className={styles.grid2}>
+                <div className={styles.formGroupInline}>
+                  <label className={styles.label}>Name</label>
+                  <input
+                    name="Name"
+                    value={editForm.Name}
+                    onChange={handleEditChange}
+                    className={styles.input}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroupInline}>
+                  <label className={styles.label}>Email</label>
+                  <input
+                    name="Email"
+                    type="email"
+                    value={editForm.Email}
+                    onChange={handleEditChange}
+                    className={styles.input}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroupInline}>
+                  <label className={styles.label}>Phone</label>
+                  <input
+                    name="Phone"
+                    value={editForm.Phone}
+                    onChange={handleEditChange}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroupInline}>
+                  <label className={styles.label}>Roll No</label>
+                  <input
+                    name="RollNo"
+                    value={editForm.RollNo}
+                    onChange={handleEditChange}
+                    className={styles.input}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroupInline}>
+                  <label className={styles.label}>Food Coupons Allocated</label>
+                  <input
+                    name="FoodCuponNumber"
+                    type="number"
+                    min="0"
+                    value={editForm.FoodCuponNumber}
+                    onChange={handleEditChange}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+
+              <label className={styles.checkboxRow}>
+                <input
+                  type="checkbox"
+                  name="sendEmail"
+                  checked={editForm.sendEmail}
+                  onChange={handleEditChange}
+                />
+                <span>Send email notification to participant</span>
+              </label>
+
+              <div className={styles.modalActions}>
+                <button type="button" onClick={closeEdit} className={styles.cancelButton}>Cancel</button>
+                <button type="submit" className={styles.saveButton} disabled={editLoading}>
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

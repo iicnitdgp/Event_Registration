@@ -110,6 +110,58 @@ const deleteParticipant = async (participantId) => {
     }
 };
 
+const updateParticipant = async (participantId, updates) => {
+    try {
+        await connectDB();
+
+        const allowed = ['Name', 'Email', 'Phone', 'RollNo', 'FoodCuponNumber'];
+        const updateDoc = {};
+        for (const key of allowed) {
+            if (Object.prototype.hasOwnProperty.call(updates, key)) {
+                updateDoc[key] = updates[key];
+            }
+        }
+
+        const existing = await EventRegister.findById(participantId);
+        if (!existing) {
+            throw new Error('Participant not found');
+        }
+
+        // Optional: prevent duplicates within same event when changing Email/RollNo
+        if ((updateDoc.Email && updateDoc.Email !== existing.Email) || (updateDoc.RollNo && updateDoc.RollNo !== existing.RollNo)) {
+            const dup = await EventRegister.findOne({
+                _id: { $ne: participantId },
+                EventID: existing.EventID,
+                $or: [
+                    ...(updateDoc.Email ? [{ Email: updateDoc.Email }] : []),
+                    ...(updateDoc.RollNo ? [{ RollNo: updateDoc.RollNo }] : []),
+                ],
+            });
+            if (dup) {
+                throw new Error('Another registration with the same Email or Roll No exists for this event');
+            }
+        }
+
+        const result = await EventRegister.findByIdAndUpdate(participantId, updateDoc, { new: true }).populate('EventID');
+        return {
+            id: result._id.toString(),
+            EventID: result.EventID._id.toString(),
+            EventName: result.EventID.EventName,
+            EventDetails: result.EventID.EventDetails,
+            EventDate: result.EventID.EventDate,
+            Name: result.Name,
+            Email: result.Email,
+            Phone: result.Phone,
+            RollNo: result.RollNo,
+            QRCodeUrl: result.QRCodeUrl,
+            FoodCuponNumber: result.FoodCuponNumber || 0,
+            FoodCuponIssued: result.FoodCuponIssued || 0,
+        };
+    } catch (err) {
+        throw new Error('Error updating participant: ' + err.message);
+    }
+};
+
 const updateRegistrationQRCode = async (registrationId, qrCodeUrl) => {
     try {
         await connectDB();
@@ -297,5 +349,6 @@ export const EVENT_DBOperation = {
     getRegistrationById,
     issueFoodCoupons,
     markEntry,
-    markExit
+    markExit,
+    updateParticipant
 };
