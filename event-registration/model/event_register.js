@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const eventRegisterSchema = new mongoose.Schema({
     EventID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event',
+        ref: 'Events',
         required: true
     },
     Name: {
@@ -33,8 +33,20 @@ const eventRegisterSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         required: false
+    },
+    EntryTimestamp: {
+        type: Date,
+        default: () => new Date()
+    },
+    ExitTimestamp: {
+        type: Date,
+        default: () => new Date()
+    },
+    TotalTimeInside: {
+        type: Number,
+        default: 0  // in milliseconds
     }
 }, { timestamps: true });
 
-const EventRegister = mongoose.models.IIC_EventRegister || mongoose.model('IIC_EventRegister', eventRegisterSchema);
+const EventRegister = mongoose.models.IIC_EventRegisters || mongoose.model('IIC_EventRegisters', eventRegisterSchema);
 export default EventRegister;

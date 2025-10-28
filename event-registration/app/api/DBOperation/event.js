@@ -54,7 +54,13 @@ const registerForEvent = async (registrationData) => {
             throw new Error('Student is already registered for this event');
         }
 
-        const newRegistration = new EventRegister(registrationData);
+        const now = new Date();
+        const newRegistration = new EventRegister({
+            ...registrationData,
+            EntryTimestamp: now,
+            ExitTimestamp: now,
+            TotalTimeInside: 0
+        });
         const savedRegistration = await newRegistration.save();
         return {
             _id: savedRegistration._id,
@@ -146,6 +152,13 @@ const getRegistrationById = async (registrationId) => {
         if (!registration) {
             throw new Error('Registration not found');
         }
+        
+        console.log('Raw registration from DB:', {
+            EntryTimestamp: registration.EntryTimestamp,
+            ExitTimestamp: registration.ExitTimestamp,
+            TotalTimeInside: registration.TotalTimeInside
+        });
+        
         return {
             id: registration._id.toString(),
             EventID: registration.EventID._id.toString(),
@@ -158,7 +171,10 @@ const getRegistrationById = async (registrationId) => {
             RollNo: registration.RollNo,
             QRCodeUrl: registration.QRCodeUrl,
             FoodCuponNumber: registration.FoodCuponNumber || 0,
-            FoodCuponIssued: registration.FoodCuponIssued || 0
+            FoodCuponIssued: registration.FoodCuponIssued || 0,
+            EntryTimestamp: registration.EntryTimestamp,
+            ExitTimestamp: registration.ExitTimestamp,
+            TotalTimeInside: registration.TotalTimeInside || 0
         };
     } catch (err) {
         throw new Error('Error fetching registration: ' + err.message);
@@ -190,6 +206,86 @@ const issueFoodCoupons = async (registrationId, issuingCount) => {
     }
 };
 
+const markEntry = async (registrationId) => {
+    try {
+        await connectDB();
+        const registration = await EventRegister.findById(registrationId);
+        if (!registration) {
+            throw new Error('Registration not found');
+        }
+
+        console.log('Before Entry - Registration:', {
+            id: registration._id,
+            EntryTimestamp: registration.EntryTimestamp,
+            ExitTimestamp: registration.ExitTimestamp,
+            TotalTimeInside: registration.TotalTimeInside
+        });
+
+        // Check if user is already inside (entry > exit)
+        const entryTime = new Date(registration.EntryTimestamp);
+        const exitTime = new Date(registration.ExitTimestamp);
+        
+        console.log('Entry time:', entryTime, 'Exit time:', exitTime);
+        console.log('Entry > Exit?', entryTime > exitTime);
+        
+        if (entryTime > exitTime) {
+            throw new Error('User is already inside the auditorium');
+        }
+
+        const now = new Date();
+        const result = await EventRegister.findByIdAndUpdate(
+            registrationId,
+            { EntryTimestamp: now },
+            { new: true }
+        );
+        
+        console.log('After Entry - Updated to:', {
+            EntryTimestamp: result.EntryTimestamp,
+            ExitTimestamp: result.ExitTimestamp
+        });
+        
+        return { success: true };
+    } catch (err) {
+        console.error('Error in markEntry:', err);
+        throw new Error('Error marking entry: ' + err.message);
+    }
+};
+
+const markExit = async (registrationId) => {
+    try {
+        await connectDB();
+        const registration = await EventRegister.findById(registrationId);
+        if (!registration) {
+            throw new Error('Registration not found');
+        }
+
+        const entryTime = new Date(registration.EntryTimestamp);
+        const exitTime = new Date(registration.ExitTimestamp);
+        
+        // Check if user is inside (entry > exit)
+        if (entryTime <= exitTime) {
+            throw new Error('User is not inside the auditorium');
+        }
+
+        const now = new Date();
+        const sessionDuration = now.getTime() - entryTime.getTime();
+        const newTotal = (registration.TotalTimeInside || 0) + sessionDuration;
+
+        const result = await EventRegister.findByIdAndUpdate(
+            registrationId,
+            { 
+                ExitTimestamp: now,
+                TotalTimeInside: newTotal
+            },
+            { new: true }
+        );
+        
+        return { success: true };
+    } catch (err) {
+        throw new Error('Error marking exit: ' + err.message);
+    }
+};
+
 export const EVENT_DBOperation = {
     createEvent,
     getAllEvents,
@@ -199,5 +295,7 @@ export const EVENT_DBOperation = {
     updateRegistrationQRCode,
     getEventById,
     getRegistrationById,
-    issueFoodCoupons
+    issueFoodCoupons,
+    markEntry,
+    markExit
 };
