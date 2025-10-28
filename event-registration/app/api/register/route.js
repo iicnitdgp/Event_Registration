@@ -8,6 +8,8 @@ export async function POST(request) {
     try {
         const body = await request.json();
         
+        console.log('Received registration data:', body);
+        
         // Register the user
         const registration = await EVENT_DBOperation.registerForEvent(body);
         
@@ -66,6 +68,7 @@ export async function POST(request) {
                   <p><span class="label">Roll Number:</span> ${registration.RollNo}</p>
                   <p><span class="label">Email:</span> ${registration.Email}</p>
                   <p><span class="label">Phone:</span> ${registration.Phone}</p>
+                  ${registration.FoodCuponNumber > 0 ? `<p><span class="label">Food Coupons Allocated:</span> ${registration.FoodCuponNumber}</p>` : ''}
                 </div>
                 
                 <div class="details">

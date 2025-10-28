@@ -9,7 +9,8 @@ export default function EventRegistration() {
     Name: '',
     Email: '',
     Phone: '',
-    RollNo: ''
+    RollNo: '',
+    FoodCuponNumber: 0
   });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,25 +43,39 @@ export default function EventRegistration() {
 
     setLoading(true);
     setMessage('');
-
+    
+    const registrationPayload = {
+      EventID: selectedEvent,
+      Name: formData.Name,
+      Email: formData.Email,
+      Phone: formData.Phone,
+      RollNo: formData.RollNo,
+      FoodCuponNumber: formData.FoodCuponNumber || 0
+    };
+    
+    console.log('Submitting registration with data:', registrationPayload);
+    
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          EventID: selectedEvent,
-          ...formData
-        }),
+        body: JSON.stringify(registrationPayload),
       });
 
       const result = await response.json();
 
       if (result.success) {
         setMessage('Registration successful!');
-        setFormData({ Name: '', Email: '', Phone: '', RollNo: '' });
-        // Keep the selectedEvent so user doesn't need to select again
+        // Keep the selectedEvent and FoodCuponNumber, reset other fields
+        setFormData({ 
+          Name: '', 
+          Email: '', 
+          Phone: '', 
+          RollNo: '', 
+          FoodCuponNumber: formData.FoodCuponNumber || 0
+        });
       } else {
         setMessage('Error: ' + result.error);
       }
@@ -162,6 +177,24 @@ export default function EventRegistration() {
               onChange={(e) => setFormData({ ...formData, RollNo: e.target.value })}
               className={styles.input}
               placeholder="Enter your roll number"
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="foodCuponNumber" className={styles.label}>
+              Number of Food Coupons
+            </label>
+            <input
+              id="foodCuponNumber"
+              type="number"
+              min="0"
+              value={formData.FoodCuponNumber}
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                setFormData({ ...formData, FoodCuponNumber: isNaN(value) ? 0 : value });
+              }}
+              className={styles.input}
+              placeholder="Enter number of food coupons"
             />
           </div>
 

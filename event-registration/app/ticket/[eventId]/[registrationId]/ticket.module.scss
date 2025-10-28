@@ -238,6 +238,59 @@
     }
 }
 
+.couponInfo {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+
+    p {
+        margin: 8px 0;
+        color: #333;
+        font-size: 16px;
+
+        strong {
+            color: #ff9800;
+            margin-right: 8px;
+        }
+    }
+}
+
+.selectLabel {
+    display: block;
+    color: #ff9800;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.couponSelect {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 2px solid #ff9800;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+    margin: 10px auto;
+    display: block;
+    transition: all 0.3s ease;
+
+    &:hover {
+        border-color: #f57c00;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+    }
+
+    &:focus {
+        outline: none;
+        border-color: #f57c00;
+        box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+    }
+}
+
 @media (max-width: 768px) {
     .ticket {
         margin: 10px;

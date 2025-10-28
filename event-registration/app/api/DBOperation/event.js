@@ -63,7 +63,8 @@ const registerForEvent = async (registrationData) => {
             Name: savedRegistration.Name,
             Email: savedRegistration.Email,
             Phone: savedRegistration.Phone,
-            RollNo: savedRegistration.RollNo
+            RollNo: savedRegistration.RollNo,
+            FoodCuponNumber: savedRegistration.FoodCuponNumber
         };
     } catch (err) {
         throw new Error('Error registering for event: ' + err.message);
@@ -82,7 +83,8 @@ const getRegisteredParticipants = async (eventId) => {
             Phone: p.Phone,
             RollNo: p.RollNo,
             QRCodeUrl: p.QRCodeUrl,
-            FoodCuponIssue: p.FoodCuponIssue || false
+            FoodCuponNumber: p.FoodCuponNumber || 0,
+            FoodCuponIssued: p.FoodCuponIssued || 0
         }));
     } catch (err) {
         throw new Error('Error fetching registered participants: ' + err.message);
@@ -155,27 +157,36 @@ const getRegistrationById = async (registrationId) => {
             Phone: registration.Phone,
             RollNo: registration.RollNo,
             QRCodeUrl: registration.QRCodeUrl,
-            FoodCuponIssue: registration.FoodCuponIssue || false
+            FoodCuponNumber: registration.FoodCuponNumber || 0,
+            FoodCuponIssued: registration.FoodCuponIssued || 0
         };
     } catch (err) {
         throw new Error('Error fetching registration: ' + err.message);
     }
 };
 
-const updateFoodCouponStatus = async (registrationId, foodCouponIssued) => {
+const issueFoodCoupons = async (registrationId, issuingCount) => {
     try {
         await connectDB();
-        const result = await EventRegister.findByIdAndUpdate(
-            registrationId,
-            { FoodCuponIssue: foodCouponIssued },
-            { new: true }
-        );
-        if (!result) {
+        const registration = await EventRegister.findById(registrationId);
+        if (!registration) {
             throw new Error('Registration not found');
         }
+
+        const newIssued = (registration.FoodCuponIssued || 0) + issuingCount;
+        if (newIssued > registration.FoodCuponNumber) {
+            throw new Error('Cannot issue more coupons than allocated');
+        }
+
+        const result = await EventRegister.findByIdAndUpdate(
+            registrationId,
+            { FoodCuponIssued: newIssued },
+            { new: true }
+        );
+        
         return { success: true };
     } catch (err) {
-        throw new Error('Error updating food coupon status: ' + err.message);
+        throw new Error('Error issuing food coupons: ' + err.message);
     }
 };
 
@@ -188,5 +199,5 @@ export const EVENT_DBOperation = {
     updateRegistrationQRCode,
     getEventById,
     getRegistrationById,
-    updateFoodCouponStatus
+    issueFoodCoupons
 };

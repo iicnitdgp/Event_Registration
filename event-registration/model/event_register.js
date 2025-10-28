@@ -24,11 +24,17 @@ const eventRegisterSchema = new mongoose.Schema({
     QRCodeUrl: {
         type: String
     },
-    FoodCuponIssue:{
-        type: Boolean,
-        default: false
+    FoodCuponNumber:{
+        type: Number,
+        default: 0,
+        required: false
+    },
+    FoodCuponIssued:{
+        type: Number,
+        default: 0,
+        required: false
     }
 }, { timestamps: true });
 
-const EventRegister = mongoose.models.EventRegister || mongoose.model('EventRegister', eventRegisterSchema);
+const EventRegister = mongoose.models.IIC_EventRegister || mongoose.model('IIC_EventRegister', eventRegisterSchema);
 export default EventRegister;

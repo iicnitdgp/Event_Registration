@@ -17,23 +17,23 @@ export async function PATCH(request, { params }) {
 
         const { registrationId } = await params;
         const body = await request.json();
-        const { foodCouponIssued } = body;
+        const { issuingCount } = body;
 
-        if (typeof foodCouponIssued !== 'boolean') {
+        if (typeof issuingCount !== 'number' || issuingCount < 1) {
             return NextResponse.json(
-                { success: false, error: 'Invalid food coupon status' },
+                { success: false, error: 'Invalid issuing count' },
                 { status: 400 }
             );
         }
 
-        await EVENT_DBOperation.updateFoodCouponStatus(registrationId, foodCouponIssued);
+        await EVENT_DBOperation.issueFoodCoupons(registrationId, issuingCount);
 
         return NextResponse.json({ 
             success: true, 
-            message: 'Food coupon status updated successfully' 
+            message: 'Food coupons issued successfully' 
         });
     } catch (error) {
-        console.error('Error updating food coupon:', error);
+        console.error('Error issuing food coupons:', error);
         return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }

@@ -127,8 +127,9 @@ export default function ViewParticipants() {
                       <th>Email</th>
                       <th>Phone</th>
                       <th>Roll No</th>
+                      <th>Food Coupons</th>
                       <th>QR Code</th>
-                      <th>Food Coupon</th>
+                      <th>Coupon Status</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -139,6 +140,7 @@ export default function ViewParticipants() {
                         <td>{participant.Email}</td>
                         <td>{participant.Phone || 'N/A'}</td>
                         <td>{participant.RollNo}</td>
+                        <td>{participant.FoodCuponNumber || 0}</td>
                         <td>
                           {participant.QRCodeUrl ? (
                             <a 
@@ -154,10 +156,17 @@ export default function ViewParticipants() {
                           )}
                         </td>
                         <td>
-                          {participant.FoodCuponIssue ? (
-                            <span className={styles.couponIssued}>✓ Issued</span>
+                          {participant.FoodCuponNumber > 0 ? (
+                            <div className={styles.couponStatus}>
+                              <span className={styles.couponIssued}>
+                                Issued: {participant.FoodCuponIssued || 0} / {participant.FoodCuponNumber}
+                              </span>
+                              <span className={styles.couponRemaining}>
+                                Remaining: {participant.FoodCuponNumber - (participant.FoodCuponIssued || 0)}
+                              </span>
+                            </div>
                           ) : (
-                            <span className={styles.couponNotIssued}>Not Issued</span>
+                            <span className={styles.couponNotAllocated}>Not Allocated</span>
                           )}
                         </td>
                         <td>

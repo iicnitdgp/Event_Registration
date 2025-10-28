@@ -13,6 +13,7 @@ export default function TicketPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [updatingCoupon, setUpdatingCoupon] = useState(false);
+    const [issuingCount, setIssuingCount] = useState(1);
 
     useEffect(() => {
         fetchRegistrationDetails();
@@ -42,8 +43,14 @@ export default function TicketPage() {
             return;
         }
 
+        const remaining = registration.FoodCuponNumber - registration.FoodCuponIssued;
+        if (issuingCount > remaining) {
+            alert(`Cannot issue ${issuingCount} coupons. Only ${remaining} remaining.`);
+            return;
+        }
+
         const confirmIssue = window.confirm(
-            `Issue food coupon to ${registration.Name}?`
+            `Issue ${issuingCount} food coupon(s) to ${registration.Name}?`
         );
 
         if (!confirmIssue) return;
@@ -55,13 +62,19 @@ export default function TicketPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ foodCouponIssued: true }),
+                body: JSON.stringify({ 
+                    issuingCount: issuingCount
+                }),
             });
 
             const data = await response.json();
 
             if (data.success) {
-                setRegistration({ ...registration, FoodCuponIssue: true });
+                setRegistration({ 
+                    ...registration, 
+                    FoodCuponIssued: registration.FoodCuponIssued + issuingCount 
+                });
+                setIssuingCount(1);
             } else {
                 alert('Error: ' + data.error);
             }
@@ -139,32 +152,44 @@ export default function TicketPage() {
                         </div>
                     )}
 
-                    <div className={styles.foodCouponStatusSection}>
-                        <h2>Food Coupon Status</h2>
-                        <div className={styles.statusDisplay}>
-                            {registration.FoodCuponIssue ? (
-                                <div className={styles.couponIssued}>
-                                    <span className={styles.checkmark}>✓</span>
-                                    <span>Food Coupon Issued</span>
-                                </div>
-                            ) : (
-                                <div className={styles.couponNotIssued}>
-                                    <span>Food Coupon Not Issued Yet</span>
-                                </div>
-                            )}
+                    {registration.FoodCuponNumber > 0 && (
+                        <div className={styles.foodCouponStatusSection}>
+                            <h2>Food Coupon Information</h2>
+                            <div className={styles.couponInfo}>
+                                <p><span className={styles.label}>Total Allocated:</span> {registration.FoodCuponNumber}</p>
+                                <p><span className={styles.label}>Issued:</span> {registration.FoodCuponIssued || 0}</p>
+                                <p><span className={styles.label}>Remaining:</span> {registration.FoodCuponNumber - (registration.FoodCuponIssued || 0)}</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {session && !registration.FoodCuponIssue && (
+                    {session && registration.FoodCuponNumber > 0 && registration.FoodCuponIssued < registration.FoodCuponNumber && (
                         <div className={styles.adminSection}>
                             <h2>Admin Actions</h2>
                             <div className={styles.couponSection}>
+                                <label htmlFor="issuingCount" className={styles.selectLabel}>
+                                    Number of coupons to issue:
+                                </label>
+                                <select
+                                    id="issuingCount"
+                                    value={issuingCount}
+                                    onChange={(e) => setIssuingCount(parseInt(e.target.value))}
+                                    className={styles.couponSelect}
+                                    disabled={updatingCoupon}
+                                >
+                                    {Array.from(
+                                        { length: registration.FoodCuponNumber - registration.FoodCuponIssued },
+                                        (_, i) => i + 1
+                                    ).map(num => (
+                                        <option key={num} value={num}>{num}</option>
+                                    ))}
+                                </select>
                                 <button
                                     onClick={handleFoodCouponIssue}
                                     disabled={updatingCoupon}
                                     className={styles.couponButton}
                                 >
-                                    {updatingCoupon ? 'Issuing...' : 'Issue Food Coupon'}
+                                    {updatingCoupon ? 'Issuing...' : 'Issue Food Coupon(s)'}
                                 </button>
                             </div>
                         </div>
